@@ -42,7 +42,7 @@ def whats_new(session):
     sections_by_python = div_with_ul.find_all(
         'li', attrs={'class': 'toctree-l1'}
     )
-    results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор'),]
+    results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
     for section in tqdm(sections_by_python):
         version_link = urljoin(whats_new_url, section.find('a')['href'])
         response = get_response(session, version_link)
@@ -77,7 +77,7 @@ def latest_versions(session):
         else:
             logging.error(DATA_ERROR, exc_info=True)
             raise ValueError(DATA_ERROR)
-    results = [('Ссылка на документацию', 'Версия', 'Статус'),]
+    results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
     for a_tag in a_tags:
         text_match = re.search(pattern, a_tag.text)
@@ -141,7 +141,9 @@ def pep(session):
         logging.error(RESPONSE_ERROR.format(url=PEPS_MAIN_URL), exc_info=True)
         raise ValueError(RESPONSE_ERROR.format(url=PEPS_MAIN_URL))
     soup = BeautifulSoup(response.text, 'lxml')
-    tag_abbr = find_tag(soup, 'section', {'id': 'numerical-index'}).find_all('abbr')
+    tag_abbr = find_tag(
+        soup, 'section', {'id': 'numerical-index'}
+    ).find_all('abbr')
     QUANTITY_PEP['Total'] = len(tag_abbr)
     for tag in tqdm(tag_abbr):
         pep_url = urljoin(
