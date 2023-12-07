@@ -44,3 +44,6 @@ python main.py --help
 ```
 python main.py [-h] [-c] [-o {pretty,file}] {whats-new, latest-versions, download, pep}
 ```
+
+## Автор
+Мусатова Татьяна

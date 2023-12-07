@@ -7,8 +7,9 @@ from requests_cache import CachedSession
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import BASE_DIR, MAIN_DOC_URL, PEPS_MAIN_URL
+from constants import BASE_DIR, DOWNLOADS, MAIN_DOC_URL, PEPS_MAIN_URL
 from outputs import control_output
+from src.exceptions import ParserFindTagException
 from utils import find_tag, get_response, making_soup
 
 ARGUMENTS = 'Аргументы командной строки: {args}'
@@ -28,20 +29,26 @@ def whats_new(session):
     '''
     Парсинг информации из статей о нововведениях в Python.
     '''
+    logs = ''
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
-    soup = making_soup(session, whats_new_url)
-    sections_by_python = soup.select(
-        '#what-s-new-in-python div.toctree-wrapper li.toctree-l1'
-    )
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
-    for section in tqdm(sections_by_python):
-        version_link = urljoin(whats_new_url, section.find('a')['href'])
-        soup = making_soup(session, version_link)
+    for url in tqdm(
+        making_soup(session, whats_new_url)
+        .select('li.toctree-l1 > a[href!="changelog.html"]')
+    ):
+        version_link = urljoin(whats_new_url, url['href'])
+        try:
+            soup = making_soup(session, version_link)
+        except ConnectionError as error:
+            logs += error
+            continue
         results.append((
             version_link,
             find_tag(soup, 'h1').text,
             find_tag(soup, 'dl').text.replace('\n', ' ')
         ))
+    if logs:
+        logging.error(logs)
     return results
 
 
@@ -50,16 +57,14 @@ def latest_versions(session):
     Парсинг статусов версий Python.
     '''
     soup = making_soup(session, MAIN_DOC_URL)
-    ul_tags = find_tag(
-        soup, 'div', {'class': 'sphinxsidebarwrapper'}
-    ).find_all('ul')
+    ul_tags = soup.select('.sphinxsidebarwrapper ul')
     for ul in ul_tags:
         if 'All versions' in ul.text:
             a_tags = ul.find_all('a')
             break
         else:
             logging.error(DATA_ERROR, exc_info=True)
-            raise Exception(DATA_ERROR)
+            raise ParserFindTagException(DATA_ERROR)
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
     for a_tag in a_tags:
@@ -82,7 +87,7 @@ def download(session):
         downloads_url,
         soup.select_one('table.docutils a[href$="pdf-a4.zip"]')['href']
     )
-    DOWNLOADS_DIR = BASE_DIR / 'downloads'
+    DOWNLOADS_DIR = BASE_DIR / DOWNLOADS
     DOWNLOADS_DIR.mkdir(exist_ok=True)
     archive_path = DOWNLOADS_DIR / archive_url.split('/')[-1]
     response = get_response(session, archive_url)
@@ -95,29 +100,34 @@ def pep(session):
     '''
     Парсинг - подсчет общего количества РЕР и в каждом статусе.
     '''
-    quantity_pep = defaultdict(int)
-    soup = making_soup(session, PEPS_MAIN_URL)
-    log = ''
-    for tag in tqdm(soup.select('#numerical-index tr')[1:]):
+    quantity_peps = defaultdict(int)
+    logs = ''
+    for tag in tqdm(
+        making_soup(session, PEPS_MAIN_URL).select('#numerical-index tr')[1:]
+    ):
         status = tag.select_one('abbr')['title'].split()[-1]
         pep_url = urljoin(PEPS_MAIN_URL, tag.select_one('a')['href'])
-        soup = making_soup(session, pep_url)
+        try:
+            soup = making_soup(session, pep_url)
+        except ConnectionError as error:
+            logs += error
+            continue
         pep_status = (
             soup.find(string='Status').find_parent().find_next_sibling().text
         )
-    if status != pep_status:
-        log += ERROR_STATUS.format(
-            url=pep_url,
-            status_card=pep_status,
-            status=status
-        )
-    quantity_pep[pep_status] += 1
-    if log:
-        logging.info(log)
+        if status != pep_status:
+            logs += ERROR_STATUS.format(
+                url=pep_url,
+                status_card=pep_status,
+                status=status
+            )
+        quantity_peps[pep_status] += 1
+    if logs:
+        logging.error(logs)
     return (
-        [('Статус', 'Количество')] +
-        list(zip(quantity_pep.keys(), quantity_pep.values())) +
-        [('Total', sum(quantity_pep.values()))]
+        ('Статус', 'Количество'),
+        *zip(quantity_peps.keys(), quantity_peps.values()),
+        ('Total', sum(quantity_peps.values()))
         )
 
 

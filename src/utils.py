@@ -1,9 +1,10 @@
+from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 from requests import RequestException
 
 from exceptions import ParserFindTagException
 
-ERROR_MSG = 'Не найден тег {tag} {attrs}.'
+ERROR_TAG = 'Не найден тег {tag} {attrs}.'
 RESPONSE_ERROR = 'Данные со страницы {url} не получены: {error}.'
 
 
@@ -11,16 +12,15 @@ def get_response(session, url, encoding='utf-8'):
     '''Перехватываем ошибки RequestException.'''
     try:
         response = session.get(url)
-        response.raise_for_status()
         response.encoding = encoding
         return response
     except RequestException as error:
         raise ConnectionError(RESPONSE_ERROR.format(url=url, error=error))
 
 
-def making_soup(session, url):
+def making_soup(session, url, parsing='lxml'):
     '''Преобразуем HTML-документ в дерево объектов Python.'''
-    return BeautifulSoup(get_response(session, url).text, features='lxml')
+    return BeautifulSoup(get_response(session, url).text, parsing)
 
 
 def find_tag(soup, tag, attrs=None):
@@ -28,5 +28,5 @@ def find_tag(soup, tag, attrs=None):
     attrs_data = {} if attrs is None else attrs
     searched_tag = soup.find(tag, attrs=attrs_data)
     if searched_tag is None:
-        raise ParserFindTagException(ERROR_MSG.format(tag=tag, attrs=attrs))
+        raise ParserFindTagException(ERROR_TAG.format(tag=tag, attrs=attrs))
     return searched_tag
