@@ -46,4 +46,4 @@ python main.py [-h] [-c] [-o {pretty,file}] {whats-new, latest-versions, downloa
 ```
 
 ## Автор
-Мусатова Татьяна
+[Мусатова Татьяна](https://github.com/Tatiana314)
