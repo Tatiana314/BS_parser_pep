@@ -3,13 +3,12 @@ import re
 from collections import defaultdict
 from urllib.parse import urljoin
 
-from requests_cache import CachedSession
-from tqdm import tqdm
-
 from configs import configure_argument_parser, configure_logging
 from constants import BASE_DIR, DOWNLOADS, MAIN_DOC_URL, PEPS_MAIN_URL
 from outputs import control_output
+from requests_cache import CachedSession
 from src.exceptions import ParserFindTagException
+from tqdm import tqdm
 from utils import find_tag, get_response, making_soup
 
 ARGUMENTS = 'Аргументы командной строки: {args}'
@@ -126,9 +125,9 @@ def pep(session):
         logging.error(logs)
     return (
         ('Статус', 'Количество'),
-        *zip(quantity_peps.keys(), quantity_peps.values()),
+        *quantity_peps.items(),
         ('Total', sum(quantity_peps.values()))
-        )
+    )
 
 
 MODE_TO_FUNCTION = {
