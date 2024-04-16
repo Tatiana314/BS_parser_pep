@@ -5,7 +5,6 @@
 Программа осуществляет построчный вывод данных в консоль и в виде таблицы, сохраняет данные в формате csv-файла.
 
 ## Технологии
-Python3, BeautifulSoup, Requests, PrettyTable 
 [![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue?logo=python)](https://www.python.org/)
 [![BeautifulSoup](https://img.shields.io/badge/-BeautifulSoup4-464646?logo=bs4)](https://beautiful-soup-4.readthedocs.io/en/latest/)
 [![Requests_cache](https://img.shields.io/badge/-Requests--Cache-464646?logo=requests-cache)](https://requests-cache.readthedocs.io/en/stable/)
@@ -39,6 +38,10 @@ windows: source env/scripts/activate
 ```
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+```
+Для запуска проекта перейти в директорию src:
+```
+cd src
 ```
 Ознакомиться со справкой и/или запустить проект в нужном режиме:
 ```
