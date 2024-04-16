@@ -9,6 +9,7 @@
 [![BeautifulSoup](https://img.shields.io/badge/-BeautifulSoup4-464646?logo=bs4)](https://beautiful-soup-4.readthedocs.io/en/latest/)
 [![Requests_cache](https://img.shields.io/badge/-Requests--Cache-464646?logo=requests-cache)](https://requests-cache.readthedocs.io/en/stable/)
 [![PrettyTable](https://img.shields.io/badge/-Pretty_Table-464646?logo=prettytable)](https://pypi.org/project/prettytable/)
+[![logging](https://img.shields.io/badge/-logging-464646?logo=python)](https://docs.python.org/3/library/logging.html)
 
 ## Режимы работы парсера
 1. `whats-new` - сбор информации о нововведениях в Python: ссылка на статью, заголовок, автор;
