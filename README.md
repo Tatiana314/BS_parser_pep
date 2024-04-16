@@ -23,7 +23,7 @@ Python3, BeautifulSoup, Requests, PrettyTable
 ## Запуск проекта
 Клонировать репозиторий:
 ```
-git clone https://github.com/Tatiana314/bs4_parser_pep.git
+git clone https://github.com/Tatiana314/BS_parser_pep.git && cd BS_parser_pep
 ```
 Создать и активировать виртуальное окружение:
 ```
